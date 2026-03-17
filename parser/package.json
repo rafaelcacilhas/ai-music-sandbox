@@ -1,0 +1,31 @@
+{
+  "name": "parser",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "parser.ts",
+  "scripts": {
+    "process": "node --loader ts-node/esm process.ts",
+    "process:dataset": "node --loader ts-node/esm process.ts ./dataset ./data/processed/training.json",
+    "process:tracks": "node --loader ts-node/esm process.ts ./dataset ./data/processed/training-per-track.json --per-track",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.ts",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.ts --watch"
+  },
+  "dependencies": {
+    "fast-glob": "^3.3.3",
+    "fs": "^0.0.1-security",
+    "midi-file": "^1.2.4"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^25.2.3",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

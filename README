@@ -1,0 +1,44 @@
+Some code for generating songs in midi. Test Driven Development
+
+MIDI Files  →   Notes     →     Patterns      →     Tokens    →     Model     →     Generation  →    Music
+   (raw)        (clean)         (examples)          (input)         (learning)      (output)        (audio)
+
+1. MIDI Loading 
+2. Event Processing
+3. Pattern Extraction
+4. Tokenization Strategy 
+5. CLI Orchestration and scripts
+
+Parser Foundation
+Tokenization
+Data Processing Pipeline
+Simple Model
+Transformer
+
+```bash
+AI/
+├── data/         
+│   ├── processed
+│       ├── ...
+├── dataset
+│   │   ├── bach
+│   │   ├── liszt
+├─  models/      
+│   │   ├── shared
+│   │   ├── simple_bigram
+│   │   │   ├── model.py
+│   │   │   ├── generate.py
+│   │   │   ├── train.py
+├── parser/         
+│   │   ├── core
+│   │   │   ├── midi-parser.ts
+│   │   │   ├── event-processor.ts
+│   │   ├── tests
+│   │   ├── types
+├── types/     
+│   ├── model-type.ts
+├── README          
+
+
+```
+
