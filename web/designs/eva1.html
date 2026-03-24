@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NERV AI Music Lab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0c0f;
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            color: #e0e5ec;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Main container – like a NERV terminal */
+        .terminal {
+            max-width: 1000px;
+            width: 100%;
+            background: #11151c;
+            border: 1px solid #2a2f3a;
+            border-radius: 0;
+            box-shadow: 0 0 20px rgba(255, 40, 40, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Header with NERV style */
+        .header {
+            background: #0b0e12;
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #ff3e3e;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #ff3e3e;
+            font-family: 'Share Tech Mono', monospace;
+            margin-bottom: 0.25rem;
+        }
+        .header p {
+            font-size: 0.8rem;
+            color: #8f9bb3;
+            letter-spacing: 1px;
+        }
+        /* Red accent line */
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 30%;
+            height: 2px;
+            background: #ff3e3e;
+        }
+
+        /* Content panels – like MAGI consoles */
+        .content {
+            padding: 2rem;
+        }
+        .panel {
+            background: #0f1319;
+            border: 1px solid #232833;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .panel::before {
+            content: "// NERV_AUDIO";
+            position: absolute;
+            top: -0.6rem;
+            left: 1rem;
+            background: #0f1319;
+            padding: 0 0.5rem;
+            font-size: 0.7rem;
+            color: #ff3e3e;
+            letter-spacing: 1px;
+        }
+
+        /* Sliders and controls */
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b0bed9;
+            margin-bottom: 0.5rem;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 3px;
+            background: #2a2f3a;
+            -webkit-appearance: none;
+            border-radius: 0;
+        }
+        input[type="range"]:focus {
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #ff3e3e;
+            border-radius: 0;
+            cursor: pointer;
+            box-shadow: 0 0 4px #ff3e3e;
+        }
+        .value-display {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #ff3e3e;
+            text-align: right;
+        }
+
+        /* Select boxes */
+        select {
+            width: 100%;
+            background: #0b0e12;
+            border: 1px solid #2a2f3a;
+            padding: 0.75rem 1rem;
+            color: #e0e5ec;
+            font-family: monospace;
+            font-size: 0.85rem;
+            border-radius: 0;
+            cursor: pointer;
+        }
+        select:focus {
+            outline: none;
+            border-color: #ff3e3e;
+        }
+
+        /* Buttons – like launch buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .btn {
+            flex: 1;
+            background: transparent;
+            border: 1px solid #2a2f3a;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #b0bed9;
+        }
+        .btn-primary {
+            background: #ff3e3e20;
+            border-color: #ff3e3e;
+            color: #ff3e3e;
+        }
+        .btn-primary:hover {
+            background: #ff3e3e40;
+            box-shadow: 0 0 12px rgba(255, 62, 62, 0.3);
+        }
+        .btn-secondary:hover {
+            background: #2a2f3a;
+        }
+
+        /* Player section – like an entry plug status */
+        .player-section {
+            background: #0b0e12;
+            border: 1px solid #2a2f3a;
+            padding: 1.5rem;
+        }
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            color: #8f9bb3;
+        }
+        audio {
+            width: 100%;
+            filter: grayscale(0.5) contrast(1.2);
+            margin-bottom: 1rem;
+        }
+        .status-led {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #ff3e3e;
+            border-radius: 0;
+            margin-right: 8px;
+            box-shadow: 0 0 6px #ff3e3e;
+        }
+
+        /* Footer – system info */
+        .footer {
+            border-top: 1px solid #1e232c;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #5a6b8c;
+            font-family: monospace;
+        }
+
+        /* Utility */
+        hr {
+            border-color: #232833;
+            margin: 1rem 0;
+        }
+        .seed-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .seed-input input {
+            background: #0b0e12;
+            border: 1px solid #2a2f3a;
+            padding: 0.5rem;
+            color: #e0e5ec;
+            width: 80px;
+            text-align: center;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="terminal">
+    <div class="header">
+        <h1>NERV AI MUSIC LAB</h1>
+        <p>▷ SYSTEM STATUS: ACTIVE | MELODY GENERATION ONLINE</p>
+    </div>
+    <div class="content">
+        <div class="panel">
+            <div class="control-group">
+                <div class="control-label">
+                    <span>◢ TEMPERATURE (ENTROPY)</span>
+                    <span id="temp-value" class="value-display">0.9</span>
+                </div>
+                <input type="range" id="temperature" min="0.1" max="2.0" step="0.1" value="0.9">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>◢ SEQUENCE LENGTH (FRAMES)</span>
+                    <span id="length-value" class="value-display">100</span>
+                </div>
+                <input type="range" id="length" min="20" max="200" step="10" value="100">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">◢ SEED TYPE</div>
+                <select id="seed-type">
+                    <option value="random">RANDOM</option>
+                    <option value="note" selected>SPECIFIC NOTE</option>
+                    <option value="sos">SYSTEM START</option>
+                </select>
+            </div>
+
+            <div class="control-group seed-input">
+                <input type="number" id="seed-value" min="0" max="127" value="60" placeholder="NOTE #">
+                <span style="color:#5a6b8c;">(MIDI note 0-127)</span>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="generate-btn">◢ LAUNCH GENERATION</button>
+                <button class="btn btn-secondary" id="randomize-btn">◢ RANDOMIZE</button>
+            </div>
+        </div>
+
+        <div class="player-section">
+            <div class="player-header">
+                <div><span class="status-led"></span> CURRENT PATTERN</div>
+                <div id="file-info">generated_0001.mid</div>
+            </div>
+            <audio id="audio-player" controls>
+                <source src="#" type="audio/midi">
+                Your browser does not support MIDI playback.
+            </audio>
+            <div style="display: flex; justify-content: space-between; font-size: 0.7rem;">
+                <span>🎵 <span id="note-count">0</span> notes</span>
+                <span>⏱️ <span id="duration">0.0</span> sec</span>
+                <span>🌡️ temp <span id="temp-display">0.9</span></span>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <div>MAGI SYSTEM v.02 | BIGRAM MODEL</div>
+        <div>SAVE ▸ EXPORT ▸ ANALYZE</div>
+    </div>
+</div>
+
+<script>
+    // UI updates only – no actual generation yet
+    const tempSlider = document.getElementById('temperature');
+    const lengthSlider = document.getElementById('length');
+    const tempValue = document.getElementById('temp-value');
+    const lengthValue = document.getElementById('length-value');
+    const seedType = document.getElementById('seed-type');
+    const seedValue = document.getElementById('seed-value');
+
+    tempSlider.addEventListener('input', () => {
+        let v = parseFloat(tempSlider.value).toFixed(1);
+        tempValue.innerText = v;
+        document.getElementById('temp-display').innerText = v;
+    });
+    lengthSlider.addEventListener('input', () => {
+        lengthValue.innerText = lengthSlider.value;
+    });
+
+    document.getElementById('generate-btn').addEventListener('click', () => {
+        // Here you'd call your actual generation
+        alert('⚡ GENERATION SEQUENCE INITIATED. (Connect to your Python backend)');
+        // For demo, pretend we have notes
+        document.getElementById('note-count').innerText = Math.floor(Math.random() * 100) + 20;
+        document.getElementById('duration').innerText = (Math.random() * 20 + 5).toFixed(1);
+    });
+
+    document.getElementById('randomize-btn').addEventListener('click', () => {
+        tempSlider.value = (Math.random() * 1.9 + 0.1).toFixed(1);
+        tempSlider.dispatchEvent(new Event('input'));
+        lengthSlider.value = Math.floor(Math.random() * 180 + 20);
+        lengthSlider.dispatchEvent(new Event('input'));
+        seedType.value = Math.random() > 0.5 ? 'note' : 'random';
+    });
+</script>
+</body>
+</html>

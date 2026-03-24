@@ -1,0 +1,16 @@
+{
+  "name": "ai-music-sandbox",
+  "version": "1.0.0",
+  "scripts": {
+    "parse": "cd parser && npm run process",
+    "parse:dataset": "cd parser && npm run process:dataset",
+    "train": "cd models/simple_bigram && python train.py",
+    "generate": "cd models/simple_bigram && python generate_midi.py",
+    "generate:web": "cd models/simple_bigram && python generate_midi.py --output ../../web/public/current.mid",
+    "web": "cd web && npm run dev",
+    "pipeline": "npm run parse:dataset && npm run train && npm run generate:web"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0"
+  }
+}

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NERV AI Music Lab | v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0c0f;
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Main container */
+        .nerv-terminal {
+            max-width: 1400px;
+            width: 100%;
+            background: #0f1117;
+            border: 1px solid #2a2f3a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Geometric header with layered shapes */
+        .header {
+            background: linear-gradient(135deg, #0b0e12 0%, #13171f 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #ff5e3a;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 100%;
+            background: repeating-linear-gradient(45deg, rgba(255,94,58,0.05) 0px, rgba(255,94,58,0.05) 2px, transparent 2px, transparent 8px);
+            pointer-events: none;
+        }
+        .title-section h1 {
+            font-size: 2.2rem;
+            font-weight: 400;
+            letter-spacing: 6px;
+            color: #ff5e3a;
+            margin-bottom: 0.25rem;
+        }
+        .title-section h1 span {
+            font-size: 0.8rem;
+            color: #5ac45a;
+            letter-spacing: normal;
+        }
+        .title-section p {
+            font-size: 0.7rem;
+            color: #7e8cae;
+        }
+        .time-section {
+            background: #050608;
+            padding: 0.5rem 1rem;
+            border: 1px solid #ff5e3a;
+            text-align: center;
+        }
+        .seven-segment {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 2rem;
+            color: #ff5e3a;
+            letter-spacing: 4px;
+            text-shadow: 0 0 5px rgba(255,94,58,0.3);
+        }
+        .time-label {
+            font-size: 0.6rem;
+            color: #5ac45a;
+            letter-spacing: 1px;
+        }
+
+        /* Grid layout for main content */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 0;
+            padding: 1.5rem;
+        }
+
+        /* Left panel - controls */
+        .controls-panel {
+            background: #0c0f14;
+            border: 1px solid #2a2f3a;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .controls-panel::before {
+            content: '// CONTROL_SYSTEM';
+            position: absolute;
+            top: -0.6rem;
+            left: 1rem;
+            background: #0c0f14;
+            padding: 0 0.5rem;
+            font-size: 0.7rem;
+            color: #ff8c42;
+        }
+
+        /* Orange rounded boxes */
+        .info-box {
+            background: linear-gradient(135deg, #1a1f2a 0%, #13171f 100%);
+            border: 1px solid #ff8c42;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .info-box h3 {
+            font-size: 0.7rem;
+            color: #ff8c42;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        .info-box .big-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e0e5ec;
+            line-height: 1;
+        }
+        .info-box .small-text {
+            font-size: 0.65rem;
+            color: #7e8cae;
+        }
+
+        /* Sliders */
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #b0bed9;
+            margin-bottom: 0.5rem;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 3px;
+            background: #2a2f3a;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #ff8c42;
+            border-radius: 0;
+            cursor: pointer;
+            box-shadow: 0 0 6px #ff8c42;
+        }
+        .value-display {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #ff8c42;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .btn {
+            flex: 1;
+            background: transparent;
+            border: 1px solid #2a2f3a;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #b0bed9;
+        }
+        .btn-primary {
+            background: #ff5e3a20;
+            border-color: #ff5e3a;
+            color: #ff5e3a;
+        }
+        .btn-primary:hover {
+            background: #ff5e3a40;
+            box-shadow: 0 0 12px rgba(255,94,58,0.3);
+        }
+        .btn-danger {
+            background: #aa2e1e20;
+            border-color: #aa2e1e;
+            color: #aa2e1e;
+        }
+        .btn-danger:hover {
+            background: #aa2e1e40;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            margin-top: 1rem;
+        }
+        .progress-label {
+            font-size: 0.6rem;
+            color: #ff8c42;
+            margin-bottom: 0.25rem;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #2a2f3a;
+            position: relative;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff8c42, #ff5e3a);
+            transition: width 0.3s;
+        }
+
+        /* Right panel - visualization */
+        .viz-panel {
+            background: #0c0f14;
+            border: 1px solid #2a2f3a;
+            border-left: none;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .viz-panel::before {
+            content: '// DATA_VISUALIZATION';
+            position: absolute;
+            top: -0.6rem;
+            left: 1rem;
+            background: #0c0f14;
+            padding: 0 0.5rem;
+            font-size: 0.7rem;
+            color: #5ac45a;
+        }
+
+        /* Heatmap / Topology visualization */
+        .heatmap-container {
+            background: #080b0f;
+            border: 1px solid #2a2f3a;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2px;
+            margin-bottom: 0.5rem;
+        }
+        .heat-cell {
+            aspect-ratio: 1;
+            background: #1a1f2a;
+            transition: all 0.2s;
+        }
+        .heat-cell.active {
+            background: #5ac45a;
+            box-shadow: 0 0 4px #5ac45a;
+        }
+        .heat-cell.hot {
+            background: #ff5e3a;
+        }
+        .heat-cell.warm {
+            background: #ff8c42;
+        }
+
+        /* Error box */
+        .error-box {
+            background: #aa2e1e20;
+            border: 1px solid #aa2e1e;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        .error-box.show {
+            display: block;
+        }
+        .error-box .error-title {
+            color: #aa2e1e;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        .error-box .error-message {
+            font-size: 0.7rem;
+            color: #e0e5ec;
+        }
+
+        /* Player section */
+        .player-section {
+            background: #080b0f;
+            border-top: 1px solid #2a2f3a;
+            padding: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        audio {
+            flex: 1;
+            filter: grayscale(0.3);
+        }
+        .player-stats {
+            font-size: 0.7rem;
+            color: #5ac45a;
+        }
+
+        /* Footer */
+        .footer {
+            border-top: 1px solid #1e232c;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: #5a6b8c;
+        }
+
+        .status-led {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #5ac45a;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        hr {
+            border-color: #232833;
+            margin: 1rem 0;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="nerv-terminal">
+    <div class="header">
+        <div class="title-section">
+            <h1>NERV AI MUSIC LAB <span>v2.0</span></h1>
+            <p>◢ MAGI AUDIO SYNTHESIS | BIGRAM PROBABILITY ENGINE</p>
+        </div>
+        <div class="time-section">
+            <div class="seven-segment" id="seven-segment">00:00:00</div>
+            <div class="time-label">SESSION TIME</div>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <!-- LEFT: Controls -->
+        <div class="controls-panel">
+            <div class="info-box">
+                <h3>◢ MODEL STATUS</h3>
+                <div class="big-number">3494</div>
+                <div class="small-text">VOCABULARY SIZE</div>
+                <div class="big-number" style="font-size:1.5rem; margin-top:0.5rem;">257</div>
+                <div class="small-text">TRAINING PATTERNS</div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>◢ TEMPERATURE (ENTROPY)</span>
+                    <span id="temp-value" class="value-display">0.9</span>
+                </div>
+                <input type="range" id="temperature" min="0.1" max="2.0" step="0.1" value="0.9">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>◢ SEQUENCE LENGTH</span>
+                    <span id="length-value" class="value-display">100</span>
+                </div>
+                <input type="range" id="length" min="20" max="200" step="10" value="100">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">◢ SEED TYPE</div>
+                <select id="seed-type">
+                    <option value="random">RANDOM</option>
+                    <option value="note" selected>SPECIFIC NOTE</option>
+                    <option value="sos">SYSTEM START</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="number" id="seed-value" min="0" max="127" value="60" style="flex:1; background:#0b0e12; border:1px solid #2a2f3a; padding:0.5rem; color:#e0e5ec;">
+                <span style="font-size:0.65rem; color:#5a6b8c;">MIDI NOTE</span>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="generate-btn">◢ LAUNCH</button>
+                <button class="btn" id="randomize-btn">◢ RANDOMIZE</button>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">GENERATION PROGRESS</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="error-box" id="error-box">
+                <div class="error-title">⚠️ ERROR</div>
+                <div class="error-message" id="error-message">Connection failed</div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Visualization -->
+        <div class="viz-panel">
+            <div class="heatmap-container">
+                <div class="heatmap" id="heatmap">
+                    <!-- 12x8 heatmap cells generated by JS -->
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size:0.6rem; margin-top:0.5rem;">
+                    <span style="color:#5ac45a;">● high probability</span>
+                    <span style="color:#ff8c42;">● medium</span>
+                    <span style="color:#ff5e3a;">● low</span>
+                </div>
+            </div>
+            <div class="info-box" style="margin-bottom:0;">
+                <h3>◢ NOTE DISTRIBUTION</h3>
+                <canvas id="spectrum" width="400" height="80" style="width:100%; height:80px; background:#080b0f;"></canvas>
+                <div class="small-text" style="margin-top:0.5rem;">pitch class histogram (0-127)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="player-section">
+        <div><span class="status-led"></span> AUDIO OUTPUT</div>
+        <audio id="audio-player" controls>
+            <source src="#" type="audio/midi">
+        </audio>
+        <div class="player-stats" id="player-stats">0 notes | 0.0s</div>
+    </div>
+
+    <div class="footer">
+        <div>BIGRAM MODEL | TRAINED ON CLASSICAL + GAME DATASET</div>
+        <div id="session-stats">GENERATIONS: 0</div>
+    </div>
+</div>
+
+<script>
+    // 7-segment timer
+    let startTime = Date.now();
+    let generationCount = 0;
+    
+    function updateTimer() {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const hours = Math.floor(elapsed / 3600);
+        const minutes = Math.floor((elapsed % 3600) / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('seven-segment').innerText = 
+            `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+    }
+    setInterval(updateTimer, 1000);
+    
+    // Create heatmap cells
+    const heatmap = document.getElementById('heatmap');
+    for(let i = 0; i < 96; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'heat-cell';
+        heatmap.appendChild(cell);
+    }
+    
+    // Simulate heatmap data (in real version, this would come from model probabilities)
+    function updateHeatmap() {
+        const cells = document.querySelectorAll('.heat-cell');
+        cells.forEach((cell, idx) => {
+            const r = Math.random();
+            cell.classList.remove('active', 'hot', 'warm');
+            if(r > 0.7) cell.classList.add('hot');
+            else if(r > 0.4) cell.classList.add('warm');
+            else if(r > 0.2) cell.classList.add('active');
+        });
+    }
+    
+    // Simple canvas spectrum visualization
+    const canvas = document.getElementById('spectrum');
+    const ctx = canvas.getContext('2d');
+    function drawSpectrum() {
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        canvas.width = w;
+        canvas.height = h;
+        ctx.fillStyle = '#080b0f';
+        ctx.fillRect(0, 0, w, h);
+        for(let i = 0; i < 128; i++) {
+            const height = Math.random() * h;
+            ctx.fillStyle = `hsl(${30 + Math.random() * 30}, 70%, 50%)`;
+            ctx.fillRect(i * (w/128), h - height, Math.max(1, w/128 - 1), height);
+        }
+    }
+    
+    // UI updates
+    const tempSlider = document.getElementById('temperature');
+    const lengthSlider = document.getElementById('length');
+    const tempValue = document.getElementById('temp-value');
+    const lengthValue = document.getElementById('length-value');
+    const progressFill = document.getElementById('progress-fill');
+    const errorBox = document.getElementById('error-box');
+    const generateBtn = document.getElementById('generate-btn');
+    const playerStats = document.getElementById('player-stats');
+    const sessionStats = document.getElementById('session-stats');
+    
+    tempSlider.addEventListener('input', () => {
+        tempValue.innerText = parseFloat(tempSlider.value).toFixed(1);
+    });
+    lengthSlider.addEventListener('input', () => {
+        lengthValue.innerText = lengthSlider.value;
+    });
+    
+    function simulateProgress() {
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 10;
+            progressFill.style.width = progress + '%';
+            if(progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    progressFill.style.width = '0%';
+                }, 500);
+            }
+        }, 80);
+    }
+    
+    generateBtn.addEventListener('click', () => {
+        errorBox.classList.remove('show');
+        simulateProgress();
+        
+        // Simulate generation delay
+        setTimeout(() => {
+            generationCount++;
+            sessionStats.innerText = `GENERATIONS: ${generationCount}`;
+            playerStats.innerText = `${Math.floor(Math.random() * 100) + 20} notes | ${(Math.random() * 15 + 2).toFixed(1)}s`;
+            updateHeatmap();
+            drawSpectrum();
+            
+            // Randomly show error sometimes (for demo)
+            if(Math.random() < 0.1) {
+                document.getElementById('error-message').innerText = '⚠️ SEQUENCE TIMEOUT | RETRYING...';
+                errorBox.classList.add('show');
+            }
+        }, 400);
+    });
+    
+    document.getElementById('randomize-btn').addEventListener('click', () => {
+        tempSlider.value = (Math.random() * 1.9 + 0.1).toFixed(1);
+        tempSlider.dispatchEvent(new Event('input'));
+        lengthSlider.value = Math.floor(Math.random() * 180 + 20);
+        lengthSlider.dispatchEvent(new Event('input'));
+    });
+    
+    // Initial visualization
+    updateHeatmap();
+    drawSpectrum();
+    setInterval(() => {
+        if(Math.random() < 0.3) updateHeatmap();
+    }, 2000);
+</script>
+</body>
+</html>
