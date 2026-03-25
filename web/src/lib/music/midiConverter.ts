@@ -2,6 +2,15 @@ import * as ToneMidi from '@tonejs/midi';
 import type { Note } from './types';
 
 export function tokensToNotes(tokens: number[], vocab: Record<number, string>): Note[] {
+  if (!vocab) {
+    console.error('Vocab is undefined');
+    return [];
+  }
+
+  if (!tokens || tokens.length === 0) {
+    return [];
+  }
+
   const notes: Note[] = [];
   let currentTime = 0;
   let i = 0;
@@ -31,22 +40,30 @@ export function tokensToNotes(tokens: number[], vocab: Record<number, string>): 
 }
 
 export function notesToMidi(notes: Note[], tempo: number = 120): Blob {
-  const midi = new ToneMidi.Midi();
-  
-  const track = midi.addTrack();
-  
-  let currentTime = 0;
-  
-  notes.forEach(note => {
-    track.addNote({
-      midi: note.pitch,
-      time: currentTime,
-      duration: note.duration,
-      velocity: note.velocity
+  if (!notes || notes.length === 0) {
+    console.warn('No notes to convert');
+    return new Blob([], { type: 'audio/midi' });
+  }
+
+  try {
+    const midi = new ToneMidi.Midi();
+    const track = midi.addTrack();
+    let currentTime = 0;
+    
+    notes.forEach(note => {
+      track.addNote({
+        midi: note.pitch,
+        time: currentTime,
+        duration: note.duration,
+        velocity: note.velocity
+      });
+      currentTime += note.duration;
     });
-    currentTime += note.duration;
-  });
-  
-  const midiArray = midi.toArray() as unknown as BlobPart
-  return new Blob([midiArray], { type: 'audio/midi' });
+    
+    const midiArray = midi.toArray() as unknown as BlobPart
+    return new Blob([midiArray], { type: 'audio/midi' });
+  } catch(err:any){
+    console.error("Error creating MIDI:", err)
+    return new Blob([],{type: 'audio/midi'})
+  }
 }
