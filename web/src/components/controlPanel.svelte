@@ -3,6 +3,8 @@
     import { generateMelody } from '$lib/music/generation';
     import { getContext } from 'svelte';
     import type { Writable } from 'svelte/store';
+	import LoadingBar from './loadingBar.svelte';
+    import { type Generation } from '$lib/music/generation';
     
     const generationStore = getContext('generation') as Writable<{
         temperature: number;
@@ -16,8 +18,11 @@
 
     const midiStore = getContext('midi') as Writable<{
         currentUrl: string;
-        selectedGeneration: any;
+        selectedGeneration: Generation | null;
         generations: any[];
+        shouldStop: boolean;
+        isPlaying: boolean;
+        playerRef:any;
     }>;
 
     async function generateNewMelody() {
@@ -57,7 +62,9 @@
         } catch (err: any) {
             $generationStore.generationError = err.message;
         } finally {
-            $generationStore.isGenerating = false;
+            setTimeout(() => {
+                $generationStore.isGenerating = false;
+            }, 500);
         }
     }
     
@@ -144,14 +151,15 @@
         </div>
     {/if}
 
-    {#if $generationStore.isGenerating}
     <div class="progress-container">
-        <div class="progress-label">GENERATION IN PROGRESS</div>
-        <div class="progress-bar">
-        <div class="progress-fill" style="width: 100%; animation: pulse 1s ease-in-out infinite;"></div>
-        </div>
+        {#if $generationStore.isGenerating}
+            <div class="progress-label">GENERATION IN PROGRESS</div>
+            <div class="progress-bar">
+                <LoadingBar trigger={true} segmentCount={24}/>
+            </div>
+        {/if}
     </div>
-    {/if}
+
 </div>
 
 <style>
@@ -301,6 +309,11 @@
 
   .progress-container {
     margin-top: 1rem;
+    min-height:1.5rem;
+    display:flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
   }
 
   .progress-label {
@@ -308,24 +321,10 @@
     color: #ff8c42;
     margin-bottom: 0.25rem;
   }
-
   .progress-bar {
     width: 100%;
     height: 2px;
-    background: #2a2f3a;
-    position: relative;
+    transform-origin: top left;
+    transform: translateX(-20%);
   }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ff8c42, #ff3e3e);
-    animation: pulse 1s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-
 </style>

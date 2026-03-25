@@ -1,7 +1,14 @@
 <script lang="ts">
+  import { getContext } from 'svelte';
+  import type { Writable } from 'svelte/store';
   import {  generations, type Generation } from '$lib/music/generation';
-
-  let selectedGeneration: Generation | null = $state(null);
+  
+  const midiStore = getContext('midi') as Writable<{
+    currentUrl: string;
+    selectedGeneration: Generation | null;
+    generations: any[];
+    shouldStop: boolean;
+  }>;
 
   function downloadMidi(url: string, filename: string) {
     const a = document.createElement('a');
@@ -19,11 +26,12 @@
 <div class="logs-header">◢ GENERATION LOGS</div>
     <div class="logs-list">
     {#each $generations as gen, i}
-        <div class="log-entry {selectedGeneration?.timestamp === gen.timestamp ? 'selected' : ''}">
+        <div class="log-entry {$midiStore.selectedGeneration?.timestamp === gen.timestamp ? 'selected' : ''}">
         <button 
             class="log-select"
             onclick={() => {
-            selectedGeneration = gen
+              $midiStore.shouldStop = true;
+              $midiStore.selectedGeneration = gen
             }}
             aria-label={`Select generation from ${new Date(gen.timestamp).toLocaleTimeString()}`}
         >

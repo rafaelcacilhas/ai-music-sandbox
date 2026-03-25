@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { setContext, onMount } from 'svelte';
+  import { setContext } from 'svelte';
   import { generationStore, midiStore } from '$lib/stores/generation';
   import MidiPlayer from '../components/player.svelte';
   import GenerationsViewer from '../components/generation.svelte'
 	import ControlPanel from '../components/controlPanel.svelte';
 	import Header from '../components/header.svelte';
 	import Footer from '../components/footer.svelte';
-
+  
   setContext('generation', generationStore);
   setContext('midi', midiStore);
 </script>
@@ -17,7 +17,7 @@
     
     <div class="content">
       <ControlPanel />
-      <MidiPlayer  />
+      <MidiPlayer   />
       <GenerationsViewer />
     </div>
 

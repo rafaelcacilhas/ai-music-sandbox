@@ -1,30 +1,33 @@
 <script lang="ts">
-  import { onMount, getContext } from 'svelte';
+  import { getContext } from 'svelte';
   import type { Writable } from 'svelte/store';
   import * as Tone from 'tone';
   import * as ToneMidi from '@tonejs/midi';
   const { Midi } = ToneMidi;
+  import { type Generation } from '$lib/music/generation';
 
   const midiStore = getContext('midi') as Writable<{
     currentUrl: string;
-    selectedGeneration: any;
+    selectedGeneration: Generation | null;
     generations: any[];
+    shouldStop: boolean;
+    isPlaying: boolean;
   }>;
 
   const generationStore = getContext('generation') as Writable<{
       generationCount: number;
   }>;
   
-  let isPlaying = $state(false);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let duration = $state(0);
-  let synth: Tone.PolySynth = $state({} as Tone.PolySynth);
+  let synth: Tone.PolySynth | null = $state({} as Tone.PolySynth);
   let midiData: any = $state(null);
   let stopTimeout: ReturnType<typeof setTimeout> | null = $state(null);
   let scheduledEvents: Array<{ time: number; note: any }> = $state([]);
-  
+  let scheduledTimeouts: ReturnType<typeof setTimeout>[] = [];
   $effect(() => {
+    if($midiStore.shouldStop) stopPlayback();
     const selected = $midiStore.selectedGeneration;
     if (selected?.url) loadMidi();
   });
@@ -34,9 +37,13 @@
       isLoading = true;
       error = null;
       
-      const data = await Midi.fromUrl($midiStore.selectedGeneration?.url);
-      midiData = data;
-      duration = data.duration;
+      if(!$midiStore.selectedGeneration ||!$midiStore.selectedGeneration.url){
+        console.error('Failed to load this generation', $midiStore.selectedGeneration);
+        return;
+      }
+
+      midiData = await Midi.fromUrl($midiStore.selectedGeneration.url);;
+      duration = midiData.duration;
       
       synth = new Tone.PolySynth(Tone.Synth).toDestination();
       
@@ -50,7 +57,7 @@
   
   async function startPlayback() {
     if (!synth || !midiData) return;
-    
+
     try {
       await Tone.start();
       
@@ -62,20 +69,27 @@
           const startTime = now + note.time;
           const endTime = startTime + note.duration;
           
-          synth.triggerAttack(note.name, startTime, note.velocity);
-          synth.triggerRelease(note.name, endTime);
+          synth!.triggerRelease(note.name, endTime);
           
+          const startTimeout = setTimeout(()=>{
+            synth!.triggerAttack(note.name, startTime, note.velocity);
+          }, (startTime - now)*1000)
+          const endTimeout = setTimeout(()=>{
+            synth!.triggerAttack(note.name, startTime, note.velocity);
+          },(endTime - now)*1000)
+
           events.push({ time: startTime, note });
           events.push({ time: endTime, note });
+          scheduledTimeouts.push(startTimeout, endTimeout);
         });
       });
       
       scheduledEvents = events;
-      isPlaying = true;
+      $midiStore.isPlaying = true;
       
       if (stopTimeout) clearTimeout(stopTimeout);
       stopTimeout = setTimeout(() => {
-        if (isPlaying) {
+        if ($midiStore.isPlaying) {
           stopPlayback();
         }
       }, duration * 1000);
@@ -86,21 +100,26 @@
     }
   }
     
-  function stopPlayback() {
-    if (!synth) return;
+  export function stopPlayback() {
+    scheduledTimeouts.forEach(timeout => clearTimeout(timeout))
+    scheduledTimeouts = [];
     
-    synth.disconnect();
-    synth.dispose();
-    
-    synth = new Tone.PolySynth(Tone.Synth).toDestination();
-    
+    if (synth) {
+      console.log("disconnect")
+      synth.disconnect();
+      synth.releaseAll();
+      synth.dispose();
+      synth = null;
+    }
+
     if (stopTimeout) {
       clearTimeout(stopTimeout);
       stopTimeout = null;
     }
     
     scheduledEvents = [];
-    isPlaying = false;
+    $midiStore.isPlaying = false;
+    $midiStore.shouldStop = false;
   }
 
 </script>
@@ -119,14 +138,10 @@
           {error}
         </div>
       {/if}
-      
-      {#if isLoading}
-        <div class="loading">Loading MIDI...</div>
-      {:else if midiData}
         <div class="controls">
           <button 
             onclick={startPlayback} 
-            disabled={isPlaying}
+            disabled={$midiStore.isPlaying}
             class="play-btn "
           >
             ▶ Play
@@ -134,20 +149,19 @@
           
           <button 
             onclick={stopPlayback} 
-            disabled={!isPlaying}
+            disabled={!$midiStore.isPlaying}
             class="stop-btn "
           >
             ⏹ Stop
           </button>
         </div>
-        
+
         <div class="info">
           {duration.toFixed(1)} seconds
-          {#if isPlaying}
+          {#if $midiStore.isPlaying}
             <span class="playing">● PLAYING</span>
           {/if}
         </div>
-      {/if}
     </div>
   {:else}
     <div class="empty-player">
@@ -168,6 +182,7 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+    min-height:2rem;
   }
   
   button {
@@ -212,10 +227,6 @@
     text-transform: uppercase;
     min-height:2rem;
   }
-  
-  .loading {
-    color: #ff8904;
-  }
 
   .player-section {
     background: #0b0e12;
@@ -240,6 +251,10 @@
     text-align: center;
     padding: 2rem;
     color: #5a6b8c;
+    
+    p{
+      margin-bottom: 1rem;
+    }
   }
 
   .status-waiting {
