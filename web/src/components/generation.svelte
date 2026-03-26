@@ -2,6 +2,7 @@
   import { getContext } from 'svelte';
   import type { Writable } from 'svelte/store';
   import {  generations, type Generation } from '$lib/music/generation';
+	import { getOriginalNode } from 'typescript';
   
   const midiStore = getContext('midi') as Writable<{
     currentUrl: string;
@@ -21,68 +22,100 @@
 
 </script>    
 
-<div class="genaration-panel">
-<div class="logs-panel">
-<div class="logs-header">◢ GENERATION LOGS</div>
-    <div class="logs-list">
+<div class="panel">
+  <div class="logs-list">
     {#each $generations as gen, i}
-        <div class="log-entry {$midiStore.selectedGeneration?.timestamp === gen.timestamp ? 'selected' : ''}">
-        <button 
-            class="log-select"
-            onclick={() => {
-              $midiStore.shouldStop = true;
-              $midiStore.selectedGeneration = gen
-            }}
-            aria-label={`Select generation from ${new Date(gen.timestamp).toLocaleTimeString()}`}
-        >
-            <span class="log-time">{new Date(gen.timestamp).toLocaleTimeString()}</span>
-            <span class="log-params">T:{gen.params.temperature.toFixed(1)} L:{gen.params.length}</span>
-        </button>
-        <button 
-            class="log-download "
-            onclick={(e) => { 
-            e.stopPropagation(); 
-            downloadMidi(gen.url, `melody_${gen.timestamp}.mid`);
-            }}
-            aria-label="Download MIDI"
-        >
-            ⬇️
-        </button>
+        <div class="log-entry {$midiStore.selectedGeneration?.timestamp === gen.timestamp ? 'selected' : ''}">     
+          <span class="log-params">Temp {gen.params.temperature.toFixed(1)} Length {gen.params.length}</span>
+
+          <button 
+              class="log-select"
+              onclick={() => {
+                $midiStore.shouldStop = true;
+                $midiStore.selectedGeneration = gen
+              }}
+              aria-label={`Select generation from ${new Date(gen.timestamp).toLocaleTimeString()}`}
+          >
+              <span class="log-time">{gen.name}</span>
+          </button>
+          
+          <button 
+              class="log-download "
+              onclick={(e) => { 
+              e.stopPropagation(); 
+              downloadMidi(gen.url, `melody_${gen.timestamp}.mid`);
+              }}
+              aria-label="Download MIDI"
+          >
+              download
+          </button>
         </div>
     {/each}
-    </div>
-</div>
+  </div>
 </div>
 
 
 <style>  
-  .logs-panel {
-    background: #0a0c10;
-    border: 1px solid #2a2f3a;
-    border-left: 3px solid #ff8c42;
-    height: 300px;
-    overflow-y: auto;
+  .panel {
+      background: #0f1319;
+      border: 1px solid #232833;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      position: relative;
   }
 
-  .log-entry {
-    display: flex;
-    justify-content: space-between;
+  .panel::before {
+    content: "// GENERATION LOGS";
+    position: absolute;
+    top: -0.6rem;
+    left: 1rem;
+    background: #0f1319;
+    padding: 0 0.5rem;
+    font-size: 0.7rem;
+    color: var(--color-red);
+    letter-spacing: 1px;
+  }
+
+  .logs-list{
+    display:flex;
+    justify-content: flex-start;
     align-items: center;
-    border-bottom: 1px solid #1a1f2a;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+
+  .log-entry {
+    min-width:150px;
+    min-height:120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    border-radius: 15px;
+    border: 2px solid var(--color-orange);
   }
 
   .log-select {
-    flex: 1;
-    display: flex;
-    justify-content: space-between;
-    padding: 0.75rem;
+    padding: -2px;
+    margin: -0.5rem 0;
     background: transparent;
-    border: none;
+    border: 0;
+
+    flex: 1;
+    min-height:100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
     color: inherit;
     cursor: pointer;
     text-align: left;
     font-family: monospace;
+        letter-spacing: 0;
+
   }
+
 
   .log-select:hover {
     background: #ff5e3a10;
@@ -90,17 +123,22 @@
 
   .log-entry.selected .log-select {
     background: #ff5e3a20;
-    border-left: 2px solid #ff8c42;
+    border-left: 2px solid var(--color-orange);
   }
 
   .log-download {
-    max-width:50px;
-    border: none;
-    color: #ff8c42;
+    color: var(--color-orange);
     cursor: pointer;
-    padding: 0.75rem;
-    font-size: 1rem;
-    margin-right: 0.25rem;
+    font-size: 0.75rem;
+    letter-spacing: 0;
+
+    border-radius: 10px;
+    border: 0px solid var(--color-orange);
+
+    margin:0;
+    margin-top:-1.5rem;
+    padding:5px;
+
   }
 
   .log-download:hover {
@@ -108,23 +146,28 @@
   }
 
   .log-time {
+    margin: -0.2rem 0 0.5rem 0;
+    border:2px solid var(--color-yellow);
+    border-radius:10px;
+    padding:0.2rem 0.5rem;
     font-family: monospace;
-    color: #ff8c42;
-    font-size: 0.7rem;
+    color: var(--color-yellow);
+    font-size: 1.4rem;
   }
 
   .log-params {
+    width:100%;
+    margin: 0;
+    padding:0.5rem 0 0.25rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
     font-family: monospace;
-    color: #5ac45a;
+    text-transform: uppercase;
+    color: var(--color-green);
     font-size: 0.7rem;
-  }
-
-  .logs-header {
-    padding: 0.5rem 0.75rem;
-    background: #0b0e12;
-    border-bottom: 1px solid #2a2f3a;
-    color: #ff8c42;
-    font-size: 0.7rem;
-    letter-spacing: 2px;
+    color: var(--color-orange);
+    border-bottom: 2px solid var(--color-orange)
   }
 </style>

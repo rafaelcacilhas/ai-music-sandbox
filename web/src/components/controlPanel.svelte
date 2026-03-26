@@ -26,7 +26,11 @@
     }>;
 
     async function generateNewMelody() {
-        $generationStore = { ...$generationStore, isGenerating: true, generationError: null };
+        if($midiStore.playerRef && $midiStore.isPlaying ){
+            $midiStore.playerRef.stopPlayback();
+        }
+        $generationStore.isGenerating = true
+        $generationStore.generationError = null
         
         const noteToken = `NOTE_${$generationStore.seedValue}`;
         const entry = Object.entries(modelData.vocab).find(([_, v]) => v === noteToken);
@@ -40,7 +44,8 @@
                 seed: seed 
             });
 
-            const generation = {
+            const generation:Generation = {
+                name:result.name,
                 url: result.url,
                 timestamp: new Date().toISOString(),
                 params: {
@@ -48,7 +53,7 @@
                     length: $generationStore.length,
                     seed: seed
                 },
-                noteCount: result.notes.length
+                noteCount: result.noteCount
             }
 
             $midiStore = {
@@ -179,7 +184,7 @@
   background: #0f1319;
   padding: 0 0.5rem;
   font-size: 0.7rem;
-  color: #ff3e3e;
+  color: var(--color-red);
   letter-spacing: 1px;
   }
 
@@ -220,12 +225,12 @@
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
-  background: #ff3e3e;
+  background: var(--color-red);
   cursor: pointer;
   }
 
   .value-display {
-  color: #ff3e3e;
+  color: var(--color-red);
   font-size: 0.9rem;
   }
 
@@ -266,13 +271,13 @@
   }
 
   .btn-primary {
-  background: #ff3e3e20;
-  border-color: #ff3e3e;
-  color: #ff3e3e;
+  background: var(--color-red)20;
+  border-color: var(--color-red);
+  color: var(--color-red);
   }
 
   .btn-primary:hover:not(:disabled) {
-  background: #ff3e3e40;
+  background: var(--color-red)40;
   }
 
   .btn-secondary:hover {
@@ -318,7 +323,7 @@
 
   .progress-label {
     font-size: 0.6rem;
-    color: #ff8c42;
+    color: var(--color-orange);
     margin-bottom: 0.25rem;
   }
   .progress-bar {

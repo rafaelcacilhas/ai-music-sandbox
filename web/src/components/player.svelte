@@ -6,6 +6,8 @@
   const { Midi } = ToneMidi;
   import { type Generation } from '$lib/music/generation';
 
+  import StatusLed from './statusLed.svelte';
+
   const midiStore = getContext('midi') as Writable<{
     currentUrl: string;
     selectedGeneration: Generation | null;
@@ -103,7 +105,7 @@
   export function stopPlayback() {
     scheduledTimeouts.forEach(timeout => clearTimeout(timeout))
     scheduledTimeouts = [];
-    
+
     if (synth) {
       console.log("disconnect")
       synth.disconnect();
@@ -124,20 +126,15 @@
 
 </script>
 
-<div class="player-section">
-  <div class="player-header">
-    <div><span class="status-led"></span> CURRENT GENERATION</div>
-    <div class="generation-badge">#{$generationStore.generationCount}</div>
-  </div>
-  
- 
+<div class="panel"> 
   {#if $midiStore.selectedGeneration}
     <div class="midi-player">
-      {#if error}
-        <div class="error">
-          {error}
-        </div>
-      {/if}
+        {#if error}
+          <div class="error">
+            {error}
+          </div>
+        {/if}
+        <div class="name"> {$midiStore.selectedGeneration.name}</div>
         <div class="controls">
           <button 
             onclick={startPlayback} 
@@ -159,7 +156,7 @@
         <div class="info">
           {duration.toFixed(1)} seconds
           {#if $midiStore.isPlaying}
-            <span class="playing">● PLAYING</span>
+            <span class="playing"> <StatusLed color="green" /> PLAYING</span>
           {/if}
         </div>
     </div>
@@ -172,10 +169,39 @@
 </div>
 
 <style>
+
+  .panel {
+      background: #0f1319;
+      border: 1px solid #232833;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      position: relative;
+  }
+
+  .panel::before {
+    content: "// CURRENT GEN ";
+    position: absolute;
+    top: -0.6rem;
+    left: 1rem;
+    background: #0f1319;
+    padding: 0 0.5rem;
+    font-size: 0.7rem;
+    color: var(--color-red);
+    letter-spacing: 1px;
+  }
+
   .midi-player {
     background: #0f1319;
     padding: 1rem;
     border: 1px solid #2a2f3a;
+  }
+
+  .name{
+    color: var(--color-orange);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:0.5rem;
   }
   
   .controls {
@@ -205,8 +231,8 @@
   }
 
   .stop-btn{
-    border-color: #ff3e3e;
-    color: #ff3e3e;
+    border-color: var(--color-red);
+    color: var(--color-red);
   }
   
   .info {
@@ -215,36 +241,17 @@
   }
   
   .playing {
-    color: #5ac45a;
+    color: var(--color-green);
     margin-left: 0.5rem;
   }
   
   .error {
-    color: #ff3e3e;
+    color: var(--color-red);
     font-size: 1rem;
     margin-bottom: 0.5rem;
     text-align: center;
     text-transform: uppercase;
     min-height:2rem;
-  }
-
-  .player-section {
-    background: #0b0e12;
-    border: 1px solid #2a2f3a;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  .player-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    font-size: 0.7rem;
-  }
-
-  .generation-badge {
-    color: #ff8c42;
-    font-family: monospace;
   }
 
   .empty-player {
@@ -261,15 +268,6 @@
     font-size: 0.8rem;
     display: block;
     margin-bottom: 0.5rem;
-  }
-
-  .status-led {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background: #5ac45a;
-    margin-right: 6px;
-    animation: pulse 1.5s infinite;
   }
 
   @keyframes pulse {

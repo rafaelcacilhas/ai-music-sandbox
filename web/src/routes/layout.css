@@ -1,6 +1,22 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+:root {
+  --color-orange-dark: #B14D07;
+  --color-orange: #ff8c42;
+  --color-yellow: #FAC536;
+  --color-green: #5ac45a;
+  --color-red-dark: #8E0000;
+  --color-red:#ff3e3e;
+  
+  --color-bg-primary: #0a0c10;
+  --color-bg-secondary: #0f1319;
+  --color-bg-tertiary: #1a1f2a;
+  --color-border: #2a2f3a;
+  
+  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
+}
+
 * {
     margin:0;
     padding:0;

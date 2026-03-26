@@ -17,7 +17,7 @@
     
     <div class="content">
       <ControlPanel />
-      <MidiPlayer   />
+      <MidiPlayer bind:this={$midiStore.playerRef}   />
       <GenerationsViewer />
     </div>
 

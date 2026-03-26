@@ -1,7 +1,7 @@
 <script lang="ts">
     import { getContext } from 'svelte';
     import type { Writable } from 'svelte/store';
-    
+	import StatusLed from './statusLed.svelte';
     const generationStore = getContext('generation') as Writable<{
         modelReady: boolean;
     }>;
@@ -11,9 +11,10 @@
     <h1>◢ AI MUSIC LAB</h1>
     <h2>▷ SYSTEM STATUS: 
         <span class={$generationStore.modelReady ? 'status-active' : 'status-loading'}>
-        {$generationStore.modelReady ? 'ACTIVE' : 'LOADING MODEL...'}
+            <StatusLed color={$generationStore.modelReady ?'green':'yellow'} />
+            {$generationStore.modelReady ? 'ACTIVE' : 'LOADING MODEL...'}
         </span> 
-        | MELODY GENERATION ONLINE
+        | MELODY GENERATION <span class={$generationStore.modelReady ? 'status-active' : 'status-loading'}> {$generationStore.modelReady ? 'ONLINE' : 'CONNECTING...'}  </span>
     </h2>
 </div>
 
@@ -21,13 +22,13 @@
     .header {
         background: #0b0e12;
         padding: 1.5rem 2rem;
-        border-bottom: 2px solid #ff3e3e;
+        border-bottom: 2px solid var(--color-red);
         position: relative;
     }
 
     .header h1 {
         text-transform: uppercase;
-        color: #ff3e3e;
+        color: var(--color-red);
         font-size: 1.8rem;
     }
 
@@ -44,15 +45,17 @@
         left: 0;
         width: 30%;
         height: 2px;
-        background: #ff3e3e;
+        background: var(--color-red);
     }
 
-        .status-active {
-        color: #5ac45a;
+    .status-active {
+        padding-left: 0.2rem;
+        padding-right:0.2rem;
+        color: var(--color-green);
     }
 
     .status-loading {
-        color: #ff8c42;
+        color: var(--color-orange);
         animation: pulse 1s infinite;
     }
 

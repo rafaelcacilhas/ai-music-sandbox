@@ -15,5 +15,5 @@ export const midiStore = writable({
   selectedGeneration: null as any,
   generations: [] as any[],
   shouldStop: false,
-  playerRef: null
+  playerRef: {} as any
 });
