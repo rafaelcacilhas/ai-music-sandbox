@@ -1,44 +1,36 @@
-Some code for generating songs in midi. Test Driven Development
+A browser-based generative music tool that learns from MIDI files and creates new melodies. Built with Svelte 5, Tone.js, and a bigram probability model running entirely in the browser.
 
-MIDI Files  →   Notes     →     Patterns      →     Tokens    →     Model     →     Generation  →    Music
-   (raw)        (clean)         (examples)          (input)         (learning)      (output)        (audio)
-
-1. MIDI Loading 
-2. Event Processing
-3. Pattern Extraction
-4. Tokenization Strategy 
-5. CLI Orchestration and scripts
-
-Parser Foundation
-Tokenization
-Data Processing Pipeline
-Simple Model
-Transformer
+MIDI Files → Notes → Patterns → Tokens → Model → Generation → Music
+(raw)       (clean) (examples) (input) (learning) (output) (audio)
 
 ```bash
-AI/
-├── data/         
-│   ├── processed
-│       ├── ...
-├── dataset
-│   │   ├── bach
-│   │   ├── liszt
-├─  models/      
-│   │   ├── shared
-│   │   ├── simple_bigram
-│   │   │   ├── model.py
-│   │   │   ├── generate.py
-│   │   │   ├── train.py
-├── parser/         
-│   │   ├── core
-│   │   │   ├── midi-parser.ts
-│   │   │   ├── event-processor.ts
-│   │   ├── tests
-│   │   ├── types
-├── types/     
-│   ├── model-type.ts
-├── README          
-
+ai-music-sandbox/
+├── web/
+│ ├── src/
+│ │ ├── lib/
+│ │ │ ├── music/ # Core ML logic
+│ │ │ │ ├── bigram.ts # Bigram probability model
+│ │ │ │ ├── midiConverter.ts 
+│ │ │ │ ├── generation.ts # Generation store & logic
+│ │ │ │ └── model.json # Trained model data
+│ │ │ └── stores/ # Svelte stores
+│ │ └── routes/
+│ └── static/ # Generated MIDI files
+│
+├── dataset/ # Training MIDI files
+│ ├── bach/
+│ ├── liszt/
+│ └── ...
+│
+└── data/ 
+└── models/ 
 
 ```
 
+Run it with
+
+```bash
+cd web
+yarn install
+yarn run dev
+```
